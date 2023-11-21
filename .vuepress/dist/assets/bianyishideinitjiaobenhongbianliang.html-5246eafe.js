@@ -1,0 +1,3 @@
+import{_ as e,o as n,c as a,a as s}from"./app-ee4ba21e.js";const i={},t=s(`<p>无法搜台解决：</p><div class="language-bash line-numbers-mode" data-ext="sh"><pre class="language-bash"><code><span class="token comment">#是否使用ATBM253 Tuner驱动</span>
+<span class="token assign-left variable">config_atbm253_enable</span><span class="token operator">=</span>false
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div></div></div><p>还有一些宏已经打开或关闭，但是没有相应菜单或者功能则是系统属性没有设置。</p>`,3),o=[t];function c(l,r){return n(),a("div",null,o)}const _=e(i,[["render",c],["__file","bianyishideinitjiaobenhongbianliang.html.vue"]]);export{_ as default};
