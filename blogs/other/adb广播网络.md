@@ -2,9 +2,9 @@
 title: adb 查看广播、网络
 date: 2022-08-25
 tags:
- - adb命令
+ - adb
 categories: 
- - adb命令
+ - android
 sticky: 
    true
 ---

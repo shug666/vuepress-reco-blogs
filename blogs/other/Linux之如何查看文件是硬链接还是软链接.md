@@ -2,9 +2,9 @@
 title: Linux之 如何查看文件是`硬链接`还是`软链接`
 date: 2023-08-11
 tags:
- - linux命令
+ - linux
 categories: 
- - linux命令
+ - linux
 sticky: 
    true
 ---

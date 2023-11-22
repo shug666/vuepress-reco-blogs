@@ -2,9 +2,9 @@
 title: 生成带系统签名的APK
 date: 2022-09-05
 tags:
- - 持久性应用程序安装
+ - android
 categories: 
- - 持久性应用程序安装
+ - android
 sticky: 
    true
 ---

@@ -2,9 +2,9 @@
 title: user版本打开uart，让android log输出
 date: 2023-07-04
 tags:
- - 持久性应用程序安装
+ - android
 categories: 
- - 持久性应用程序安装
+ - android
 sticky: 
    true
 ---

@@ -1,1 +1,0 @@
-const e=JSON.parse('{"key":"v-18e79118","path":"/blogs/other/guiyihuaqujianshuzhi.html","title":"","lang":"en-US","frontmatter":{},"headers":[{"level":2,"title":"归一化","slug":"归一化","link":"#归一化","children":[]}],"git":{"createdTime":null,"updatedTime":null,"contributors":[]},"filePathRelative":"blogs/other/归一化区间数值.md"}');export{e as data};

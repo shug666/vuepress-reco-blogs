@@ -2,9 +2,9 @@
 title: Android Studio 执行main方法报错
 date: 2023-04-12
 tags:
- - IDEA
+ - IDE
 categories: 
- - IDEA
+ - IDE
 sticky: 
    true
 ---

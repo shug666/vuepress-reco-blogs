@@ -2,9 +2,9 @@
 title: logcat 日志工具使用
 date: 2023-08-21
 tags:
- - adb命令
+ - logcat
 categories: 
- - adb命令
+ - android
 sticky: 
    true
 ---

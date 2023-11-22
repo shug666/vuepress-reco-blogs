@@ -2,9 +2,9 @@
 title: Linux命令 之 find & grep配合使用_find和grep结合使用
 date: 2023-02-14
 tags:
- - linux命令
+ - linux
 categories: 
- - linux命令
+ - linux
 sticky: 
    true
 ---

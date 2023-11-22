@@ -2,9 +2,9 @@
 title: Android项目升级AndroidX或忽略此问题
 date: 2022-09-05
 tags:
- - AndroidX
+ - IDE
 categories: 
- - AndroidX
+ - IDE
 sticky: 
    true
 ---

@@ -2,9 +2,9 @@
 title: find grep sed查找命令
 date: 2022-08-17
 tags:
- - linux命令
+ - linux
 categories: 
- - linux命令
+ - linux
 sticky: 
    true
 ---

@@ -2,9 +2,9 @@
 title: ADB 常用命令写成bat脚本
 date: 2023-07-13
 tags:
- - adb命令
+ - adb
 categories: 
- - adb命令
+ - adb
 sticky: 
    true
 ---
