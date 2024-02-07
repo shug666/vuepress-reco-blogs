@@ -27,15 +27,16 @@ export default defineUserConfig({
           children: ["api", "plugin"],
         },
       ],
+      "/docs/jobs/": [ 'Gitminglingqingdan', 'AndroidMK', 'makefile', 'xitongshuxing', 'kaijijingling', 'adbmingling', 'yaokongqipeizhi','shelljiaoben', 'klwenjianjixiangguanmingling' ],
     },
     navbar: [
       { text: "随意一点的主页", link: "/" },
-      { text: "踩雷避坑请注意", link: "/categories/reco/1/" },
+      { text: "踩雷避坑请注意", link: "/categories/android/1/" },
       { text: "各种大杂烩系列", link: "/tags/android/1/" },
       {
         text: "很厉害的文章",
         children: [
-          { text: "工作学习", link: "/docs/jobs/" },
+          { text: "工作学习", link: "/docs/jobs/Gitminglingqingdan" },
           { text: "vuepress-theme-reco", link: "/blogs/other/guide" },
         ],
       },
