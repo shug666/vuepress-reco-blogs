@@ -383,19 +383,103 @@ ssh-keygen -t rsa
 cat ~/.ssh/id_rsa.pub 查看公钥
 ```
 
-## 补丁文件的生成和应用
+## patch文件的生成和应用
+
+### patch 和diff 的区别
+
+  Git 提供了两种补丁方案，一是用git diff生成的UNIX标准补丁.diff文件，二是git format-patch生成的Git专用.patch 文件。
+
+*   diff文件只是记录文件改变的内容，不带有commit记录信息,多个commit可以合并成一个diff文件。
+*   patch文件带有记录文件改变的内容，也带有commit记录信息,每个commit对应一个patch文件。
+
+**在Git下，我们可以使用.diff文件也可以使用.patch 文件来打补丁，主要应用场景有：CodeReview、代码迁移等。**
+
+### 创建patch 文件的常用命令行
+
+* 某个提交的patch：  
+
+  ```sh
+  git format-patch 【commit sha1 id】 -1
+  
+  #例子：  
+  
+  git format-patch 2a2fb4539925bfa4a141fe492d9828d030f7c8a8 -1
+  ```
+
+* 某次提交（含）之前的几次提交：
+
+  ```sh
+  git format-patch 【commit sha1 id】-n
+  
+  n指从sha1 id对应的commit开始算起n个提交。  
+  
+  例子：  
+  
+  git format-patch 2a2fb4539925bfa4a141fe492d9828d030f7c8a8 -2
+  ```
+
+* 某两次提交之间的所有patch:  
+
+  ```sh
+  git format-patch 【commit sha1 id】..【commit sha1 id】
+  
+  #例子：  
+  
+  git format-patch 2a2fb4539925bfa4a141fe492d9828d030f7c8a8..89aebfcc73bdac8054be1a242598610d8ed5f3c8
+  ```
+
+### 创建diff文件的常用方法
+
+**使用命令行**  
 
 ```sh
-git format-patch  你的commit对应的id #生成补丁
+git diff 【commit sha1 id】 【commit sha1 id】 > 【diff文件名】  
 
-git apply --stat 0001-limit-log-function.patch  # 查看patch的情况
+#例子：  
 
-git apply --check 0001-limit-log-function.patch # 检查patch是否能够打上，如果没有任何输出，则说明无冲突，可以打上
-
-git am --signoff < 0001-add-liuxiansong.patch	# 打补丁
------------------------------------------------
-git diff > text.patch
+git diff 2a2fb4539925bfa4a141fe492d9828d030f7c8a8 89aebfcc73bdac8054be1a242598610d8ed5f3c8 > patch.diff
 ```
+
+### 应用patch 和 diff
+
+#### 1. 检查 patch/diff 文件：
+
+> git apply --stat xxx.patch  
+
+#### 2.检查patch/diff是否能正常打入:
+
+> `git apply --check 【path/to/xxx.patch】`  
+>
+> `git apply --check 【path/to/xxx.diff】`
+
+#### 3.打入patch/diff:
+
+> `git apply 【path/to/xxx.patch】`  
+>
+> `git apply 【path/to/xxx.diff】`  
+>
+> 或者  
+>
+> `git am 【path/to/xxx.patch】`
+
+### 冲突解决
+
+1. 执行命令 `git am xxxx.patch` 尝试直接打入补丁。因为我们使用的 patch 已经过时了，所以这一步肯定会报错并中断（注意，虽然命令停止执行了，但我们依然处于git am命令的运行环境中，可以通过git status命令查看到当前的状态）。
+
+2. 执行命令 `git apply --reject xxxx.patch` 自动合入 patch 中不冲突的代码改动，同时保留冲突的部分。这些存在冲突的改动内容会被单独存储到目标源文件的相应目录下，以后缀为 .rej 的文件进行保存。比如对 ./test/someDeviceDriver.c 文件中的某些行合入代码改动失败，则会将这些发生冲突的行数及内容都保存在 ./test/someDeviceDriver.c.rej 文件中。我们可以在执行 git am 命令的目录下执行 find  -name  *.rej 命令以查看所有存在冲突的源文件位置。
+
+3. 依据 步骤2 中生成的 *.rej 文件内容逐个手动解决冲突，然后删除这些 *.rej 文件。完成这一步骤的操作后，我们就可以继续执行 git am 的过程了。
+
+4. 执行命令 `git status` 查看当前改动过的以及新增的文件，确保没有多添加或少添加文件。
+
+5. 执行命令 git  add . 将所有改动都添加到暂存区（注意，关键字add后有一个小数点 . 作为参数，表示当前路径）。
+
+6. 执行命令 `git am --resolved` 或`git am --continue`继续 步骤1 中被中断的 patch 合入操作。合入完成后，会有提示信息输出。可以执行git am --skip跳过此次冲突，也可以执行git am --abort回退打入patch的动作，还原到操作前的状态。  
+7. 执行命令 `git log` 确认合入状态。
+
+### 包含二进制文件时的diff和apply
+
+> git diff HEAD^..HEAD --binary > foobar.patch
 
 ## git blame用法
 
@@ -452,3 +536,314 @@ git push -f 或 git push origin xxx/xxx -f
 3. 从暂存区把你之前提交的内容取出来，跟拉下来的代码合并
 
 **所以 rebase 在拉代码前要确保你本地工作区是干净的，如果你本地修改的内容没完全 commit 或者 stash，就会 rebase 失败。**
+
+## git stash详解
+
+```bash
+#能够将所有未提交的修改（工作区和暂存区）保存至堆栈中，用于后续恢复当前工作目录。
+$ git stash
+
+# 作用等同于git stash，区别是可以加一些注释
+$ git stash save
+
+#查看当前stash中的内容
+$ git stash list 
+
+#将当前stash中的内容弹出，并应用到当前分支对应的工作目录上。
+#注：该命令将堆栈中最近保存的内容删除（栈是先进后出）
+$ git stash pop
+
+#将堆栈中的内容应用到当前目录，不同于git stash pop，该命令不会将内容从堆栈中删除，也就说该命令能够将堆栈的内容多次应用到工作目录中，适应于多个分支的情况。
+#堆栈中的内容并没有删除。
+#可以使用git stash apply + stash名字（如stash@{1}）指定恢复哪个stash到当前的工作目录。
+$ git stash apply
+
+# 从堆栈中移除某个指定的stash
+$ git stash drop + 名称
+
+#清除堆栈中的所有 内容
+$ git stash clear
+
+#查看堆栈中最新保存的stash和当前目录的差异。
+$ git stash show stash@{1}查看指定的stash和当前目录差异。
+#通过 git stash show -p 查看详细的不同：
+#同样，通过git stash show stash@{1} -p查看指定的stash的差异内容。
+$ git stash show
+
+#从最新的stash创建分支。
+#应用场景：当储藏了部分工作，暂时不去理会，继续在当前分支进行开发，后续想将stash中的内容恢复到当前工作目录时，如果是针对同一个文件的修改（即便不是同行数据），那么可能会发生冲突，恢复失败，这里通过创建新的分支来解决。可以用于解决stash中的内容和当前目录的内容发生冲突的情景。
+#发生冲突时，需手动解决冲突。
+$ git stash branchs
+
+# stash单个文件temp.c命令：
+$ git stash push temp.c
+
+#push 和 备注同时使用
+$ git stash push -m "message" /test /tes2
+```
+
+## push某一条commit到远端
+
+### 默认情况下
+
+`git push`会推送暂存区所有提交（也即`HEAD`及其之前的提交），使用下面的命令可以改变此默认行为：
+
+```sh
+$ git push <remotename> <commit SHA>:<remotebranchname>
+```
+
+举例如下：
+
+```sh
+git push origin 248ed23e2:branchname
+```
+
+* * *
+
+### 推送某一条提交：
+
+### 第一种方式
+
+即符合git操作的规则，从**最初的commit**开始一个一个提交，但是不能实现指定某一个commit,基本满足日常的开发异常情况了**（只能按顺序提交）**
+
+图一
+
+![](https://raw.githubusercontent.com/shug666/image/main/images/d61420705ce243819ac2b119bb22bb1b.png)
+
+本地commit了3次提交但是并不想一下push到远程，根据功能或者时间的原因，想一个一个提交
+
+ 此时可以使用：
+
+```sh
+// 最下面的 一条为最老的一条，优先推送
+git push origin 9267dd9:test  
+// 接着第二条同样的命令，commit换掉即可
+git push origin 9267dd9:test
+
+// ... 依次按顺序一个一个提交...
+```
+
+### 第二种方式
+
+采用cherry-pick用新分支去拉取当前分支的指定commit记录，之后推送到当前分支远程仓库实现推送指定历史提交的功能
+
+**1. 创建临时分支**
+
+```sh
+// localbranch 为本地分支名  origin/feat 为远程目标分支
+ git checkout -b  localbranch  --track origin/feat
+```
+
+**2.  执行cherry-pick，将修改bug的记录同步过来**
+
+```sh
+git cherry-pick fcf254130f
+```
+
+后续操作就是将临时分支记录推到目标分支！！！ 
+
+## gitignore忽略文件
+
+在 `.gitignore` 文件中，可以指定哪些文件或目录应该被 Git 忽略，这样 Git 就不会追踪这些文件或目录的变化。如果你想让 Git 忽略某个特定的目录，你可以按照以下步骤操作：
+
+### 添加gitignore 文件
+
+打开你的项目根目录下的 .gitignore 文件，并在其中添加你想要忽略的目录的路径。例如，如果你想忽略名为 logs 的目录，你可以这样写：
+
+`logs/`，确保目录路径后面有一个斜杠`（/）`，这表示这是一个目录，而不是一个文件。
+
+- **忽略单个文件**：直接在`.gitignore`文件中写入文件名即可。
+- **忽略目录**：在文件名后加上斜杠`/`表示忽略该目录及其所有内容。
+- **忽略特定类型的文件**：使用星号`*`作为通配符。例如，`*.log`会忽略所有`.log`文件。
+- **忽略特定路径下的文件**：在规则前加上路径。例如，`/temp/*`会忽略根目录下temp目录中的所有文件。
+
+### `.gitignore`文件的规则匹配优先级
+
+1. **精确匹配**：如果`.gitignore`文件中存在精确匹配的文件名或目录名，则这些文件或目录会被忽略。
+2. **前缀匹配**：如果规则以斜杠`/`开头，则表示从仓库根目录开始匹配。
+3. **目录匹配**：如果规则以斜杠`/`结尾，则表示忽略该目录及其所有内容。
+4. **通配符匹配**：使用`*`、`?`和`[]`等通配符进行匹配。
+5. **否定规则**：在规则前加上`!`表示否定，即不忽略匹配的文件或目录。但需要注意的是，否定规则不会使已经被父目录规则忽略的文件重新被跟踪。
+
+### `.gitignore`文件的配置示例
+
+```bash
+# 忽略构建产物目录
+/build/
+/dist/
+
+# 忽略日志文件
+*.log
+
+# 忽略操作系统特定的文件
+.DS_Store
+Thumbs.db
+
+# 忽略临时文件
+*.tmp
+*.swp
+
+# 忽略IDE配置文件
+/.idea/
+/.vscode/
+*.iml
+
+# 忽略node_modules目录（对于Node.js项目）
+/node_modules/
+
+# 忽略package-lock.json文件（对于Node.js项目）
+package-lock.json
+
+```
+
+### 如何应用`.gitignore`文件规则
+
+- **新文件**：对于新创建的文件，如果它们符合`.gitignore`文件中的规则，则不会被Git跟踪。
+- **已跟踪文件**：对于已经被Git跟踪的文件，即使它们符合`.gitignore`文件中的规则，也不会被自动忽略。你需要手动从Git的索引中删除这些文件（使用`git rm --cached <文件>`），然后提交更改。
+- **全局`.gitignore`文件**：除了仓库级别的`.gitignore`文件外，你还可以配置全局`.gitignore`文件来忽略所有Git仓库中的某些文件。这通常通过Git配置命令来实现（例如，`git config --global core.excludesfile <全局.gitignore文件路径>`）。
+
+### 检查
+
+添加完 `.gitignore` 规则后，你可以通过以下命令来检查某个文件或目录是否被正确忽略：
+
+`git check-ignore -v logs/`
+
+## gc命令详解
+
+git gc 是 Git 的一个垃圾回收命令，用于优化和清理本地仓库。Git 仓库在长期使用过程中会产生大量不再使用的对象、无效的引用等，这些都可能影响仓库的性能和大小。通过执行 git gc，Git 会自动执行一系列清理操作，压缩历史对象、删除不再使用的对象，并合并较小的对象，从而减少仓库的体积和提升性能。
+
+具体来说，git gc 会执行以下操作：
+
+- 压缩对象文件：将多个小的对象文件合并为一个较大的文件，减少文件系统的碎片化。
+- 清理无用的引用：删除已经合并、被丢弃或被删除的分支的引用。
+- 删除 dangling objects：清除悬挂对象（如没有被引用的提交、树或文件）。
+- git gc 可以定期执行，也可以在 Git 仓库出现性能下降时手动执行
+
+**仓库过大**：如果 Git 仓库的体积变得非常庞大，可以使用 `git gc` 来压缩和清理不必要的对象，减小仓库的大小。
+
+```bash
+git gc
+```
+
+### 命令的常用选项及参数
+
+Git 提供了多个选项来定制 `git gc` 的行为，以下是一些常见的选项：
+
+#### `--aggressive`
+
+```bash
+git gc --aggressive
+```
+
+该选项会执行更深入的垃圾回收操作，花费更多时间来进一步压缩和优化对象文件。适用于希望最大程度优化仓库的情况，通常在仓库非常庞大的时候使用。
+
+#### `--prune=<date>`
+
+```bash
+git gc --prune=now
+```
+
+该选项用于删除自指定日期以来没有被引用的对象。now 表示删除所有悬挂的对象，`<date>` 可以使用相对日期（如 2.weeks.ago）来指定。
+
+例如，要删除 2 周之前的无用对象，可以使用：
+
+```bash
+git gc --prune=2.weeks.ago
+```
+
+#### `--quiet`
+
+```bash
+git gc --quiet
+```
+
+此选项用于减少输出信息，只显示必要的警告或错误信息。如果希望在后台运行并且不看到过多日志时，使用此选项非常合适
+
+#### `--auto`
+
+```bash
+git gc --auto
+```
+
+当 Git 检测到需要垃圾回收时，`--auto` 会自动触发回收，而无需手动执行。此选项通常用于 Git 在后台自动执行垃圾回收时使用。
+
+### 命令的进阶用法
+
+#### 使用 git gc 与其他 Git 优化命令结合
+
+git gc 可以与 git fsck 等命令结合使用，以确保仓库在执行垃圾回收后的完整性和一致性。
+
+```bash
+git fsck --full
+git gc --aggressive
+```
+
+解释：git fsck 检查仓库的完整性和一致性，确保没有坏的对象和引用；之后执行 git gc --aggressive 进一步优化仓库。
+
+#### 自定义垃圾回收配置
+
+Git 允许用户通过配置文件定制垃圾回收行为，例如，通过修改 .gitconfig 文件中的以下设置：
+
+```bash
+    auto = 1
+    aggressive = true
+    pruneExpire = 2.weeks.ago
+```
+
+### 命令的常见问题与解答
+
+#### 问题 1：git gc 后仓库变慢了？
+
+解答：通常来说，`git gc` 旨在提升性能。如果回收后仓库变慢了，可能是由于回收过程不完全或仓库中存在大量的小文件。尝试使用 git gc --aggressive 来优化。如果问题依然存在，考虑检查仓库的硬件或文件系统性能。
+
+#### 问题 2：`git gc` 是否会删除重要的历史记录？
+
+解答：git gc 不会删除重要的历史记录。它只会清理无用的对象和引用，不影响仓库的有效数据。如果你担心丢失数据，可以在执行 git gc 前进行备份。
+
+#### 问题 3：如何避免自动执行垃圾回收？
+
+解答：Git 会根据仓库的大小自动触发垃圾回收。如果希望禁用此功能，可以通过以下命令设置：
+
+```bash
+git config --global gc.auto 0
+```
+
+### 总结与建议
+
+`git gc` 是一个非常实用的 Git 命令，用于清理和优化本地仓库。通过定期使用 git gc，你可以保持仓库的健康和性能。对于大型仓库，使用 --aggressive 选项来进行更深入的优化。如果你的仓库已经过度膨胀，或者频繁出现性能瓶颈，执行 `git gc` 是一个非常有效的解决方案。
+
+### 最佳实践建议：
+
+定期执行 git gc，特别是在长期开发后的仓库。
+结合 `git gc` 与 `git fsck`，确保仓库的完整性和健康。
+如果仓库过大，尝试使用 `--aggressive` 来最大化优化。
+使用 `--prune` 定期清理不再使用的对象，减小仓库体积。
+通过这些方法，你可以有效地管理你的 Git 仓库，提升开发效率和仓库性能。
+
+彻底清除
+
+### 彻底清除
+```bash
+# 强制删除Git保存的原始引用备份
+rm -rf .git/refs/original/
+
+# 立即让所有引用日志（reflog）条目过期
+git reflog expire --expire=now --all
+
+# 检查仓库完整性并列出所有不可达对象
+git fsck --full --unreachable
+
+# 重新打包对象以优化存储
+git repack -A -d
+
+# 彻底清理仓库并立即删除冗余数据
+git gc --aggressive --prune=now
+```
+
+> `https://blog.csdn.net/leslie3350/article/details/144792889`
+
+### 清理工作树和索引
+
+加快git的速度，但会失去所有索引，需要手动添加对应文件/路径，否则合并会冲突
+
+`git rm -r --cached .`  # 如果需要重新扫描所有文件状态的话

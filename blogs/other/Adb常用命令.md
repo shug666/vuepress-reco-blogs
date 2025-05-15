@@ -93,7 +93,7 @@ adb logcat -b main -b system -b radio -b events -v time > bootLog.log
 ```sh
 adb root # 获取root权限
 adb remount # 挂载系统文件系统为可读写状态，显示**remount succeeded**就代表命令执行成功；
-# adb shell mount -o rw,remount /
+adb shell mount -o rw,remount /
 ```
 
 ## 7 屏幕操作
@@ -225,6 +225,7 @@ sqlite>
 ## 16 获取显示当前正在显示的Activity包名全路径
 
 ```sh
+dumpsys activity top | grep ACTIVITY
 adb shell dumpsys activity
 adb shell "dumpsys activity | grep "Activity:""
 ```

@@ -11,7 +11,7 @@ sticky:
 
 有时候，我们开发的apk需要用到系统权限，需要在AndroidManifest.xml中添加共享系统进程属性：
 
-```xml
+```shell
 android:sharedUserId="android.uid.system"
 android:sharedUserId="android.uid.shared"
 android:sharedUserId="android.media"
@@ -28,7 +28,7 @@ android:sharedUserId="android.media"
 1、拷贝App源码到Android源码的`packages/apps/`目录下，且App源码是普通(Eclipse)格式的  
 2、配置Android.mk，在其中添加
 
-```xml
+```java
 LOCAL_CERTIFICATE := platform 或 shared 或 media
 ```
 
@@ -38,13 +38,13 @@ LOCAL_CERTIFICATE := platform 或 shared 或 media
 
 1.进入系统目录
 
-```sh
+```shell
 build/target/product/security
 ```
 
 2.执行命令
 
-```
+```shell
 openssl pkcs8 -inform DER -nocrypt -in platform.pk8 -out platform.pem
 && openssl pkcs12 -export -in platform.x509.pem -out platform.p12 -inkey platform.pem -password pass:android -name androiddebugkey
 && keytool -importkeystore -deststorepass android -destkeystore platform.jks -srckeystore platform.p12 -srcstoretype PKCS12 -srcstorepass android
@@ -65,25 +65,25 @@ platform.x509.pem、platform.pk8、signapk.jar
 
 platform.x509.pem、platform.pk8:
 
-```
+```shell
 ../build/target/product/security
 ```
 
 signapk.jar:
 
-```
+```shell
 ../out/host/linux-x86/framework
 ```
 
 signapk源码路径:
 
-```
+```shell
 ../build/tools/signapk
 ```
 
 ### **签名命令**
 
-```
+```shell
 java -jar signapk.jar platform.x509.pem platform.pk8 old.apk new.apk
 ```
 
@@ -190,6 +190,45 @@ buildTypes {
 ```
 
 这样直接`Run app`就是带系统签名的release版apk了。
+
+## 查看签名
+
+你可以使用 apksigner 或 keytool 工具来查看 APK 文件的签名信息。
+
+### 方法1 apksigner
+
+apksigner 是 Android SDK 中的一部分，它可以用来检查 APK 文件的签名。
+
+```shell
+~/Android/Sdk/build-tools/30.0.3/apksigner verify --verbose --print-certs your-app.apk
+```
+
+### 方法2 keytool
+
+如果你只需要查看 APK 的证书信息，可以使用 `keytool`。
+
+1. 提取 APK 的证书文件**: APK 文件是一个压缩文件，你可以使用 `unzip` 命令来解压并提取证书文件。
+
+   ```shell
+   unzip -p your-app.apk META-INF/CERT.RSA > CERT.RSA
+   ```
+
+注意apk签名不一定是rsa算法，也可能使用EC算法，那么证书文件名就是CERT.EC
+
+1. 使用 `keytool` 查看证书信息**:
+
+   ```shell
+   keytool -printcert -file CERT.RSA
+   ```
+
+   这个命令会输出证书的详细信息，包括颁发者、有效期等。
+
+   **总结**
+
+   - • **`apksigner`**: 更适合用于检查 APK 文件的完整签名信息。
+   - • **`keytool`**: 主要用于查看证书的详细信息。
+
+   选择合适的工具，根据你的需求来查看 APK 签名信息。
 
 ## 参考网址
 

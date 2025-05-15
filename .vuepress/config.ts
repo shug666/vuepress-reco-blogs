@@ -28,6 +28,8 @@ export default defineUserConfig({
         },
       ],
       "/docs/jobs/": [ 'Gitminglingqingdan', 'AndroidMK', 'makefile', 'xitongshuxing', 'kaijijingling', 'adbmingling', 'yaokongqipeizhi','shelljiaoben', 'klwenjianjixiangguanmingling' ],
+      "/docs/custom-view/": [ 'zidingyiView1-1-huizhijichu', 'zidingyiView1-2-Paintxiangjie', 'zidingyiView1-3-drawTextwenzidehuizhi', 'zidingyiView1-4-Canvasduihuizhidefuzhu', 'zidingyiView1-5-huizhishunxu', 'zidingyiView1-6-shuxingdonghuaPropertyAnimation', 'zidingyiView1-7-shuxingdonghuaPropertyAnimation', 'zidingyiView1-8-yingjianjiasu', 'zidingyiView2-1-bujujichu' ],
+      "/docs/kotlin-basic-learning/": [ 'kotlindebianliang_hanshuheleixing', 'kotlinlinaxiebushinamexiede', 'kotlinlinaxiegengfangbiande', 'kotlindefanxing', 'kotlindexiechengyonglipieyiyan', 'kotlinxiechengdeguaqi', 'xiechengdefeizusaishiguaqi', 'kotlindelambdabiaodashi', 'kotlindekuozhanhanshuhekuozhanshuxing', 'kotlindenoinlinehecrossinline', 'androiddejianzhiduicunchu', 'kotlin_unitxiangjie', 'kotlindenothingxiangjie', 'fudianshudekanghenshen', 'kotlindejiekouweituoshizhemeyongde', 'kotlindechengyuankuozhanhanshuheimplicit_receiver', 'composedezuoyongyujizhi', 'kotlindejiaqiangbanleixingtuiduanbuilderinference' ]
     },
     navbar: [
       { text: "随意一点的主页", link: "/" },
@@ -37,6 +39,8 @@ export default defineUserConfig({
         text: "很厉害的文章",
         children: [
           { text: "工作学习", link: "/docs/jobs/Gitminglingqingdan" },
+          { text: "自定义View", link: "/docs/custom-view/zidingyiView1-1-huizhijichu" },
+          { text: "Kotlin基础学习", link: "/docs/kotlin-basic-learning/kotlindebianliang_hanshuheleixing" },
           { text: "vuepress-theme-reco", link: "/blogs/other/guide" },
         ],
       },

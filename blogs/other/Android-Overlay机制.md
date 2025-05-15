@@ -36,6 +36,45 @@ frameworks/base/packages/SettingsProvider/res/values/defaults.xml
 packages/apps/Bluetooth/res/values/
 ```
 
+### **🔧 主要文件结构：**
+
+```
+vendor/
+└── overlay/
+    ├── SystemUIOverlay/
+    │   ├── Android.mk
+    │   ├── AndroidManifest.xml
+    │   ├── res/
+    │   │   ├── values/colors.xml  # 修改颜色
+    │   │   ├── drawable/ic_lock.png  # 修改图标
+    │   │   ├── layout/status_bar.xml  # 修改状态栏布局
+    │   └── Android.bp
+```
+
+####  **AndroidManifest.xml**
+
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.overlay"
+    android:versionCode="1"
+    android:versionName="1.0">
+    
+    <overlay android:targetPackage="com.android.systemui"
+             android:priority="1"
+             android:requiredSystemPropertyName="ro.vendor.overlay"
+             android:requiredSystemPropertyValue="true"/>
+</manifest>
+```
+
+**🔍 关键参数：**
+
+- `android:targetPackage="com.android.systemui"`
+- - **指定目标应用**（此处为 `SystemUI`）。
+- `android:priority="1"`
+- - **优先级**（数字越大，优先级越高）。
+- `android:requiredSystemPropertyName="ro.vendor.overlay"`
+- - **控制 Overlay 是否启用**（适用于机型适配）。
+
 ### 1.配置 overlay 目录
 
 在 Aosp 源码下下找到 `PRODUCT_PACKAGE_OVERLAYS` 的定义，一般都配置在 device 目录下，如 device/xxx/yyy/device.mk ，
@@ -66,6 +105,40 @@ device/xxx/yyy/overlay/packages/
 常用场景：覆盖替换目标 apk 的翻译词条、图片资源等。
 
 假设当前已有 Test.apk ，包名是 com.test 。我们用 运行时 Overlay 的形式替换它的 翻译词条和图片。
+
+### 常用命令
+
+🔧 **动态 Overlay 也是一个 APK，但不需要** `system` **分区权限**，可以直接安装：
+
+```bash
+$ adb install MyDynamicOverlay.apk
+```
+
+然后 **启用**：
+
+```bash
+$ cmd overlay enable com.example.overlay
+```
+
+🔍 **查看 Overlay 状态：**
+
+```bash
+$ cmd overlay list
+```
+
+🛠 **禁用 Overlay：**
+
+```bash
+$ cmd overlay disable com.example.overlay
+```
+
+### **Java 代码启用/禁用 Overlay**
+
+```java
+OverlayManager overlayManager = (OverlayManager) getSystemService(Context.OVERLAY_SERVICE);
+overlayManager.setEnabled("com.example.overlay", true); // 启用
+overlayManager.setEnabled("com.example.overlay", false); // 禁用
+```
 
 ### 1.新建 xxxOverlay 目录，创建 Android.mk
 
@@ -134,8 +207,7 @@ xxxOverlay/res/mipmap-hdpi/mip1.png
 
 需要留意，即使只是想替换 values-fa/strings.xml 里的字符串，values/strings.xml 里也要加上对应的字符串，要不然会替换不成功。
 
-4.编译
--------------------------------------------
+### 4.编译
 
 修改 device/xxx/yyy/device.mk ，把 xxxOverlay 加入编译，
 
@@ -144,3 +216,19 @@ PRODUCT_PACKAGES += \FileManagerOverlay \
 ```
 
 单编得到 xxxOverlay.apk , push 到机器上验证即可。
+
+## **静态 Overlay vs 动态 Overlay 对比**
+
+| 对比项                    | 静态 Overlay                          | 动态 Overlay                       |
+| ------------------------- | ------------------------------------- | ---------------------------------- |
+| **是否支持运行时修改**    | ❌ 需要重启                            | ✅ 运行时可切换                     |
+| **是否需要 /system 权限** | ✅ 需要                                | ❌ 不需要                           |
+| **适用场景**              | ROM 级别修改（如 SystemUI、Settings） | 运行时修改（如深色模式、主题切换） |
+| **生效方式**              | 编译时决定                            | 运行时决定                         |
+
+## 总结
+
+1. **静态 Overlay** 适合 **修改 SystemUI、Settings 等系统级资源**，需要 **AOSP 编译支持**。
+2. **动态 Overlay** 适合 **运行时切换主题/样式**，无需重启，直接 `cmd overlay` 控制。
+3. **厂商 ROM 适配** 通常结合 **静态 Overlay**（用于 ROM 定制）+ **动态 Overlay**（用于个性化切换）。
+4. **OverlayManager API** 可以在代码中 **动态切换 Overlay**，实现 UI 适配方案。
